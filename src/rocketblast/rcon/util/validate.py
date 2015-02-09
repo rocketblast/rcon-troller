@@ -9,7 +9,7 @@ class CommandValidator():
         if commands:
             CommandValidator.register_commands(commands, True)
         else:
-            raise Exceptio('Must specify at least 1 command')
+            raise Exception('Must specify at least 1 command')
 
     @classmethod
     def register_commands(cls, commands, replace=False):
