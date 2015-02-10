@@ -25,7 +25,7 @@ class Listener(threading.Thread):
     gic = pygeoip.GeoIP(os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../data', 'GeoLiteCity.dat'))
 
     def __init__(self, handle, ip, port, password, plugins=[]):
-        threading.Thread.__init__(self)
+        super(Listener, self).__init__()
 
         self.__handle = handle
         self.__ip = ip
@@ -367,10 +367,11 @@ class Listener(threading.Thread):
 
                         elif data[0] == "player.onAuthenticated":# <soldier name: string>
                             event, name = map(str, data)
+                            blarg = None
+                            # Fix for reference before assignment
 
                             try:
-                                self.__players.update({name:
-                                    self.__users.pop(name)['object']})
+                                self.__players.update({name: self.__users.pop(name)['object']})
                             except KeyError:
                                 logging.error('Joined without connecting first {}, attempting to look up EA GUID'.format(name))
                                 print 'Joined without connecting first {}, attempting to look up EA GUID'.format(name)
@@ -391,7 +392,6 @@ class Listener(threading.Thread):
 
                             for plugin in self.__plugins:
                                 plugin.on_players(['rocketblast.on_player_change', len(self.__players), 'up'])
-
 
                         elif data[0] == "player.onLeave":# <soldier name: string> <soldier info: player info block>
                             if str(data[1]) not in self.__players:
@@ -566,6 +566,10 @@ class Listener(threading.Thread):
             logging.error(traceback.format_exc())
 
     def stop(self):
+        """
+        Terminating the thread.
+        :return: None
+        """
         print 'STOP'
         self.__terminate = True
 
