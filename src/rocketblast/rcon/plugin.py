@@ -89,10 +89,21 @@ class Plugin(object):
 
     @abc.abstractmethod
     def connected(self):
+        """
+        Called when the listener successfully connected to the server.
+        Will be called when reconnecting.
+        :return None
+        """
         pass
 
     @abc.abstractmethod
     def disconnected(self):
+        """
+        Called when the listener hitting an error (Timeout, most likely)
+        or the :func: `~listener.Listener.stop()` method has been called.
+
+        :return None
+        """
         pass
 
     @abc.abstractmethod
@@ -101,6 +112,12 @@ class Plugin(object):
 
     @abc.abstractmethod
     def on_players(self, data):
+        """
+        Called when the player count changes.
+        :param data: eventType, player count, "up" or "down"
+        :type data: list
+        :return None
+        """
         pass
 
     @abc.abstractmethod
@@ -109,55 +126,110 @@ class Plugin(object):
 
     @abc.abstractmethod
     def on_pb(self, data):
-        '''punkBuster.onMessage'''
+        """
+        punkBuster.onMessage
+        :param data: List with event data
+        :type data: list
+        :return None
+        """
         pass
 
     @abc.abstractmethod
     def on_load(self, data):
-        '''server.onLevelLoaded'''
+        """
+        server.onLevelLoaded
+        :param data: List with event data
+        :type data: list
+        :return None
+        """
         pass
 
     @abc.abstractmethod
     def on_over(self, data):
-        '''server.onRoundOverPlayers'''
+        """
+        server.onRoundOverPlayers
+        :param data: List with event data
+        :type data: list
+        :return None
+        """
         pass
 
     @abc.abstractmethod
     def on_connect(self, data):
-        '''player.onJoin'''
+        """
+        player.onJoin
+        :param data: event, player, EA GUID
+        :type data: list
+        :return None
+        """
         pass
 
     @abc.abstractmethod
     def on_join(self, data):
-        '''player.onAuthenticated'''
+        """
+        player.onAuthenticated
+        :param data: event, player
+        :type data: list
+        :return None
+        """
         pass
 
     @abc.abstractmethod
     def on_part(self, data):
-        '''player.onLeave'''
+        """
+        player.onLeave
+        :param data: List with event data
+        :type data: list
+        :return None
+        """
         pass
 
     @abc.abstractmethod
     def on_team(self, data):
-        '''player.onTeamChange'''
+        """
+        player.onTeamChange
+        :param data: event, player, team, squad
+        :type data: list
+        :return None
+        """
         pass
 
     @abc.abstractmethod
     def on_squad(self, data):
-        '''player.onSquadChange'''
+        """
+        player.onSquadChange
+        :param data: event, player, team, squad
+        :type data: list
+        :return None
+        """
         pass
 
     @abc.abstractmethod
     def on_spawn(self, data):
-        '''player.onSpawn'''
+        """
+        player.onSpawn
+        :param data: event, player, team
+        :type data: list
+        :return None
+        """
         pass
 
     @abc.abstractmethod
     def on_kill(self, data):
-        '''player.onKill'''
+        """
+        player.onKill
+        :param data: event, player, victim, weapon, headshot
+        :type data: list
+        :return None
+        """
         pass
 
     @abc.abstractmethod
     def on_chat(self, data):
-        '''player.onChat'''
+        """
+        player.onChat
+        :param data: event, player, message, to
+        :type data: list
+        :return None
+        """
         pass
