@@ -1,6 +1,7 @@
 import re
 from collections import OrderedDict
 
+
 class CommandValidator():
     _commands = list()
     _command_pattern = None
@@ -13,7 +14,7 @@ class CommandValidator():
 
     @classmethod
     def register_commands(cls, commands, replace=False):
-        if not commands in cls._commands:
+        if commands not in cls._commands:
             cls._commands += commands
             cls._command_pattern = re.compile(r'(^[ ]*(?P<token>[!/])[ ]*(?P<command>{0})([ ]|$))|(([\'"]+)?(?P<argument>(?(6)[^\'"]|[^ ])+)(?(6)[\'"]+)?)'.format('|'.join(cls._commands)))
 
@@ -31,6 +32,7 @@ class CommandValidator():
             return CommandMatch(True, command_match.group('command'), 'public' if command_match.group('token') == '!' else 'private', arguments)
 
         return CommandMatch()
+
 
 class CommandMatch():
     def __init__(self, is_command=False, command=None, visibility='public', arguments=OrderedDict()):

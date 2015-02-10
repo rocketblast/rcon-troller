@@ -1,6 +1,7 @@
 import abc
 import time
 
+
 class Plugin(object):
     __metaclass__ = abc.ABCMeta
     
@@ -15,7 +16,7 @@ class Plugin(object):
         return self.__listener.handle
 
     @handle.setter
-    def users(self, value):
+    def handle(self, value):
         self.__listener.handle = value
 
     @property
