@@ -6,7 +6,7 @@ import time
 import re
 
 from rocketblast.rcon import FormatFrostbiteClient as Client
-from plugin import Plugin
+from .plugin import Plugin
 
 import select
 import pygeoip
@@ -21,8 +21,8 @@ class Listener(threading.Thread):
     pattern_pb_disconnect = re.compile(r'PunkBuster Server\: (?P<command>Lost Connection) \(slot #(?P<slot>\d+)\) (?P<ip>(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\:(?P<port>\d+) (?P<guid>.+?)\(.+?\) (?P<name>.+?)\n')
     pattern_pb_plist = re.compile(r'PunkBuster Server\: (?P<slot>\d+)[ ]* (?P<guid>.+?)\(.+?\) (?P<ip>(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\:(?P<port>\d+) (?P<status>.+?)[ ]* (?P<power>[-+]?\d*\.\d+|\d+) (?P<auth_rate>[-+]?\d*\.\d+|\d+) (?P<recent_ss>[-+]?\d*\.\d+|\d+) \((?P<os>.+?)\) "(?P<name>.+?)"\n')
 
-    gi = pygeoip.GeoIP(os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../data', 'GeoIP.dat'))
-    gic = pygeoip.GeoIP(os.path.join(os.path.abspath(os.path.dirname(__file__)), '../../data', 'GeoLiteCity.dat'))
+    gi = pygeoip.GeoIP(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'GeoIP.dat'))
+    gic = pygeoip.GeoIP(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'GeoLiteCity.dat'))
 
     def __init__(self, handle, ip, port, password, plugins=[]):
         super(Listener, self).__init__()
@@ -94,7 +94,7 @@ class Listener(threading.Thread):
 
     @property
     def users(self):
-        return {k: v['object'] for k, v in self.__users.iteritems()}
+        return {k: v['object'] for k, v in iter(self.__users.items())}
 
     @users.setter
     def users(self, value):
@@ -147,7 +147,7 @@ class Listener(threading.Thread):
         while not self.__terminate:
             time.sleep(0.01)
 
-            for name in {k: v for k, v in self.__users.iteritems() if time.time() - v['time'] > 60 * 5}.iterkeys():
+            for name in iter({k: v for k, v in iter(self.__users.items()) if time.time() - v['time'] > 60 * 5}.keys()):
                 logging.info('Connected player timed out ({}): no join event for 5 minutes.'.format(name))
                 del self.__users[name]
 
@@ -200,7 +200,7 @@ class Listener(threading.Thread):
                     for plugin in self.__plugins:
                         plugin.connected()
 
-                for timerid, timer in {k: v for k, v in self.__timers.iteritems() if time.time() - v.get('time', 0) > 0}.iteritems():
+                for timerid, timer in iter({k: v for k, v in iter(self.__timers.items()) if time.time() - v.get('time', 0) > 0}.items()):
 
                     # Listener timers
 
@@ -208,13 +208,13 @@ class Listener(threading.Thread):
 
                         if timerid == 'player_consistency':
                             players = self.__client.formatplayers(self.__client.send(['admin.listPlayers', 'all'])).get('players', {})
-                            difference = set(self.__players.iterkeys()).symmetric_difference(set(players.iterkeys()))
+                            difference = set(iter(self.__players.keys())).symmetric_difference(set(iter(players.keys())))
                             #logging.info('############## CHECK PLAYERS\n{}\n{}'.format(', '.join(str(key) for key in sorted(players.iterkeys())), ', '.join(str(key) for key in sorted(self.__players.iterkeys()))))
                             if len(difference):
-                                logging.error('Players off {} {}\n{}\n{}'.format(len(difference), difference, ', '.join(str(key) for key in sorted(players.iterkeys())), ', '.join(str(key) for key in sorted(self.__players.iterkeys()))))
+                                logging.error('Players off {} {}\n{}\n{}'.format(len(difference), difference, ', '.join(str(key) for key in sorted(iter(players.keys()))), ', '.join(str(key) for key in sorted(iter(self.__players.keys())))))
                                 for name in difference:
                                     if name in self.__users:
-                                        print '{} is connecting, so he is OK'.format(name)
+                                        print ('{} is connecting, so he is OK'.format(name))
 #                        if timerid == 'heartbeat':
 #                            print timerid
 #                            listener.send(['ping'])
@@ -238,7 +238,7 @@ class Listener(threading.Thread):
 
                     # Plugin.player timers
 
-                    for timerid, timer in {k: v for k, v in player.get('__timers', {}).iteritems() if time.time() - v.get('time', 0) > 0}.iteritems():
+                    for timerid, timer in iter({k: v for k, v in iter(player.get('__timers', {}).items()) if time.time() - v.get('time', 0) > 0}.items()):
                         for plugin in [v for v in self.__plugins if v.__class__.__name__ == timer['class']]:
                             plugin.on_timer(['rocketblast.on_player_timer', player['name'], timerid, timer.get('interval', None), timer.get('arguments', None)])
 
@@ -305,7 +305,7 @@ class Listener(threading.Thread):
 
                                 except KeyError:
                                     logging.error('Player does not exist 1 {}'.format(str(data[1])))
-                                    print 'Player does not exist 1 {}'.format(str(data[1]))
+                                    print ('Player does not exist 1 {}'.format(str(data[1])))
 
                             elif match_pb_plist and match_pb_plist.group('name') in self.__players:
 
@@ -322,7 +322,7 @@ class Listener(threading.Thread):
                                 if self.__players.get(str(match_pb_plist.group('name')), {})['pb_guid'] == '?':
                                     #Can this happen?
                                     logging.info('PBList returned a match without a valid PB GUID {}'.format(data))
-                                    print 'PBList returned a match without a valid PB GUID {}'.format(data)
+                                    print( 'PBList returned a match without a valid PB GUID {}'.format(data))
                             else:
                                 pass#print data
 
@@ -350,7 +350,7 @@ class Listener(threading.Thread):
 
                             if name in self.__users:
                                 logging.error('Multiple join events {}'.format(name))
-                                print 'Multiple join events {}'.format(name)
+                                print( 'Multiple join events {}'.format(name))
 
                             if ea_guid in [None, '']:
                                 logging.error('NO EA GUID&&&&& {}'.format(data))
@@ -374,7 +374,7 @@ class Listener(threading.Thread):
                                 self.__players.update({name: self.__users.pop(name)['object']})
                             except KeyError:
                                 logging.error('Joined without connecting first {}, attempting to look up EA GUID'.format(name))
-                                print 'Joined without connecting first {}, attempting to look up EA GUID'.format(name)
+                                print( 'Joined without connecting first {}, attempting to look up EA GUID'.format(name))
 
                                 blarg = self.__client.send(['admin.listPlayers', 'player', name])
                                 ea_guid = self.__client.formatplayers(blarg).get('players', {}).get(name, {})['guid']
@@ -407,7 +407,7 @@ class Listener(threading.Thread):
 
                             except KeyError:
                                 logging.error('Player does not exist 2 {}'.format(str(data[1])))
-                                print 'Player does not exist 2 {}'.format(str(data[1]))
+                                print( 'Player does not exist 2 {}'.format(str(data[1])))
 
                         elif data[0] == "player.onTeamChange":# <soldier name: player name> <team: Team ID> <squad: Squad ID>
                             event, name, team, squad = str(data[0]), str(data[1]), int(data[2]), int(data[3])
@@ -466,12 +466,12 @@ class Listener(threading.Thread):
                             #if len(self.__players) > 64 or len(self.__players) < 0:
                             if len(self.__players) > 66 or len(self.__players) < 0:
                                 logging.error('Player off {}'.format(len(self.__players)))
-                                print 'Player off {} {}'.format(len(self.__players), self.__server['serverName'])
+                                print ('Player off {} {}'.format(len(self.__players), self.__server['serverName']))
                                 real = set(self.__client.formatplayers(self.__client.send(['admin.listPlayers', 'all'])).get('players', {}))
-                                print real
+                                print (real)
                                 server = set(self.__players)
-                                print server
-                                print server - real
+                                print (server)
+                                print( server - real)
                                 #print 'Player off {}'.format(self.__players, self.__client.formatplayers(self.__client.send(['admin.listPlayers', 'all'])).get('players', {}))
 
                             for plugin in self.__plugins:
@@ -503,14 +503,14 @@ class Listener(threading.Thread):
                             logging.warn('Unrecognized event {0} ({1})'.format(data[0], data))
 
                     except Exception as x:
-                        print traceback.format_exc()
+                        print (traceback.format_exc())
                         logging.error('Error in plugin {1} ({0})'.format(x, plugin.__class__.__name__))
                         logging.error(traceback.format_exc())
                 else:
                     pass
 
             except Client.ClientException as x:
-                print traceback.format_exc()
+                print( traceback.format_exc())
                 logging.error(traceback.format_exc())
                 with self.__lock:
                     if self.__client.connected():
@@ -527,7 +527,7 @@ class Listener(threading.Thread):
                     self.stop()
 
                 else:#if x[0] in ['Timeout', 'Lost connection']:
-                    print 'Trying to reconnect {}:{} {} {}'.format(self.__ip, self.__port, threading.current_thread(), x[0])
+                    print ('Trying to reconnect {}:{} {} {}'.format(self.__ip, self.__port, threading.current_thread(), x[0]))
                     logging.info('Trying to reconnect {}:{} {} {}'.format(self.__ip, self.__port, threading.current_thread(), x[0]))
                     time.sleep(10)
                     # retry, higher interval sleep - or build this into frostbite3?
@@ -543,7 +543,7 @@ class Listener(threading.Thread):
                 #    #raise x
 
             except Exception as x:
-                print 'Exception {}'.format(x)
+                print ('Exception {}'.format(x))
                 traceback.print_exc()
                 logging.error(traceback.format_exc())
 
@@ -558,11 +558,11 @@ class Listener(threading.Thread):
             for plugin in self.__plugins:
                 plugin.disconnected()
 
-            print 'Removing monitor from {}:{} {}'.format(self.__ip, self.__port, self.thread)
+            print ('Removing monitor from {}:{} {}'.format(self.__ip, self.__port, self.thread))
             if Listener.servers[self.__handle] == self.thread:
                 del Listener.servers[self.__handle]
             self = None
-            print 'Threads {}'.format(threading.active_count())
+            print ('Threads {}'.format(threading.active_count()))
             logging.error(traceback.format_exc())
 
     def stop(self):
@@ -570,15 +570,15 @@ class Listener(threading.Thread):
         Terminating the thread.
         :return: None
         """
-        print 'STOP'
+        print ('STOP')
         self.__terminate = True
 
     def send_command(self, data):
-        print 'send_command {}'.format(data)
+        print ('send_command {}'.format(data))
         try:
             for plugin in self.__plugins:
                 plugin.on_command(data)
         except Exception as x:
-            print x
+            print (x)
             traceback.print_exc()
             logging.error(traceback.format_exc())
