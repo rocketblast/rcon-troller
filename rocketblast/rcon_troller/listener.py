@@ -214,7 +214,7 @@ class Listener(threading.Thread):
                                 logging.error('Players off {} {}\n{}\n{}'.format(len(difference), difference, ', '.join(str(key) for key in sorted(iter(players.keys()))), ', '.join(str(key) for key in sorted(iter(self.__players.keys())))))
                                 for name in difference:
                                     if name in self.__users:
-                                        print ('{} is connecting, so he is OK'.format(name))
+                                        print('{} is connecting, so he is OK'.format(name))
 #                        if timerid == 'heartbeat':
 #                            print timerid
 #                            listener.send(['ping'])
@@ -305,7 +305,7 @@ class Listener(threading.Thread):
 
                                 except KeyError:
                                     logging.error('Player does not exist 1 {}'.format(str(data[1])))
-                                    print ('Player does not exist 1 {}'.format(str(data[1])))
+                                    print('Player does not exist 1 {}'.format(str(data[1])))
 
                             elif match_pb_plist and match_pb_plist.group('name') in self.__players:
 
@@ -466,11 +466,11 @@ class Listener(threading.Thread):
                             #if len(self.__players) > 64 or len(self.__players) < 0:
                             if len(self.__players) > 66 or len(self.__players) < 0:
                                 logging.error('Player off {}'.format(len(self.__players)))
-                                print ('Player off {} {}'.format(len(self.__players), self.__server['serverName']))
+                                print('Player off {} {}'.format(len(self.__players), self.__server['serverName']))
                                 real = set(self.__client.formatplayers(self.__client.send(['admin.listPlayers', 'all'])).get('players', {}))
-                                print (real)
+                                print(real)
                                 server = set(self.__players)
-                                print (server)
+                                print(server)
                                 print( server - real)
                                 #print 'Player off {}'.format(self.__players, self.__client.formatplayers(self.__client.send(['admin.listPlayers', 'all'])).get('players', {}))
 
@@ -503,7 +503,7 @@ class Listener(threading.Thread):
                             logging.warn('Unrecognized event {0} ({1})'.format(data[0], data))
 
                     except Exception as x:
-                        print (traceback.format_exc())
+                        print(traceback.format_exc())
                         logging.error('Error in plugin {1} ({0})'.format(x, plugin.__class__.__name__))
                         logging.error(traceback.format_exc())
                 else:
@@ -523,12 +523,12 @@ class Listener(threading.Thread):
                     plugin.disconnected()
 
                 #if x[0] in ['Timeout', 'Lost connection', 'Refused']:
-                if x[0] in ['Login failed']:
+                if x.args[0] in ['Login failed']:
                     self.stop()
 
                 else:#if x[0] in ['Timeout', 'Lost connection']:
-                    print ('Trying to reconnect {}:{} {} {}'.format(self.__ip, self.__port, threading.current_thread(), x[0]))
-                    logging.info('Trying to reconnect {}:{} {} {}'.format(self.__ip, self.__port, threading.current_thread(), x[0]))
+                    print('Trying to reconnect {}:{} {} {}'.format(self.__ip, self.__port, threading.current_thread(), x.args[0]))
+                    logging.info('Trying to reconnect {}:{} {} {}'.format(self.__ip, self.__port, threading.current_thread(), x.args[0]))
                     time.sleep(10)
                     # retry, higher interval sleep - or build this into frostbite3?
                     #pass
@@ -543,7 +543,7 @@ class Listener(threading.Thread):
                 #    #raise x
 
             except Exception as x:
-                print ('Exception {}'.format(x))
+                print('Exception {}'.format(x))
                 traceback.print_exc()
                 logging.error(traceback.format_exc())
 
@@ -558,11 +558,11 @@ class Listener(threading.Thread):
             for plugin in self.__plugins:
                 plugin.disconnected()
 
-            print ('Removing monitor from {}:{} {}'.format(self.__ip, self.__port, self.thread))
+            print('Removing monitor from {}:{} {}'.format(self.__ip, self.__port, self.thread))
             if Listener.servers[self.__handle] == self.thread:
                 del Listener.servers[self.__handle]
             self = None
-            print ('Threads {}'.format(threading.active_count()))
+            print('Threads {}'.format(threading.active_count()))
             logging.error(traceback.format_exc())
 
     def stop(self):
@@ -570,15 +570,15 @@ class Listener(threading.Thread):
         Terminating the thread.
         :return: None
         """
-        print ('STOP')
+        print('STOP')
         self.__terminate = True
 
     def send_command(self, data):
-        print ('send_command {}'.format(data))
+        print('send_command {}'.format(data))
         try:
             for plugin in self.__plugins:
                 plugin.on_command(data)
         except Exception as x:
-            print (x)
+            print(x)
             traceback.print_exc()
             logging.error(traceback.format_exc())
