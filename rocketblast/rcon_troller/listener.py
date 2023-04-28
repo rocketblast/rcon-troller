@@ -171,7 +171,7 @@ class Listener(threading.Thread):
 
                     self.__server.update(self.__client.serverinfo(self.__client.send(['serverInfo'])).get('values', {}))
                     if int(self.__server.get('numPlayers', -1)) > 0:
-                        for player in self.__client.formatplayers(self.__client.send(['admin.listPlayers', 'all'])).get('players', {}).itervalues():
+                        for player in iter(self.__client.formatplayers(self.__client.send(['admin.listPlayers', 'all'])).get('players', {}).values()):
                             if str(player.get('guid', '')) == '':
                                 logging.error('NO EA GUID DURING STARTUP'.format(player))
 
@@ -234,7 +234,7 @@ class Listener(threading.Thread):
                         else:
                             plugin.remove_timer(timerid)
 
-                for player in self.__players.itervalues():
+                for player in iter(self.__players.values()):
 
                     # Plugin.player timers
 
